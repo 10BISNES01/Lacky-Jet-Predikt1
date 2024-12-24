@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Jet Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .data-container {
+            margin-top: 20px;
+        }
+        .chart {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Lucky Jet Predictor</h1>
+    <p>Analyze trends and predict coefficients for Lucky Jet game.</p>
+
+    <div class="data-container">
+        <h3>Latest Coefficients</h3>
+        <div id="latest-coefficients"></div>
+        <div id="trend-chart" class="chart"></div>
+        <h3>Prediction Signal:</h3>
+        <div id="prediction-signal"></div>
+        <button onclick="simulateNewData()">Simulate New Data</button>
+    </div>
+
+    <script>
+        let coefficientData = [1.5, 2.0, 1.8, 3.0, 1.7, 2.5, 1.9];
+
+        function simulateNewData() {
+            const newCoefficient = (Math.random() * (5 - 1) + 1).toFixed(2);
+            coefficientData.push(parseFloat(newCoefficient));
+            if (coefficientData.length > 20) {
+                coefficientData.shift();
+            }
+            updateUI();
+        }
+
+        function movingAverage(data, period) {
+            let averages = [];
+            for (let i = period - 1; i < data.length; i++) {
+                let sum = 0;
+                for (let j = 0; j < period; j++) {
+                    sum += data[i - j];
+                }
+                averages.push(sum / period);
+            }
+            return averages;
+        }
+
+        function predictSignal() {
+            const recent = coefficientData.slice(-5);
+            const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+            const trend = recent[recent.length - 1] > avg ? 'Risky - Cash Out Early!' : 'Stable - Hold Longer!';
+            return trend;
+        }
+
+        function updateUI() {
+            const latestElement = document.getElementById('latest-coefficients');
+            latestElement.innerHTML = coefficientData.map(value => `<p>Coefficient: ${value}</p>`).join('');
+
+            const signalElement = document.getElementById('prediction-signal');
+            signalElement.innerText = predictSignal();
+
+            const trendChart = document.getElementById('trend-chart');
+            const canvas = document.createElement('canvas');
+            trendChart.innerHTML = '';
+            trendChart.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            canvas.width = 400;
+            canvas.height = 200;
+
+            const dataPoints = coefficientData;
+            ctx.beginPath();
+            ctx.moveTo(0, 200 - (dataPoints[0] * 30));
+            dataPoints.forEach((value, index) => {
+                ctx.lineTo(index * (400 / dataPoints.length), 200 - (value * 30));
+            });
+            ctx.strokeStyle = '#007BFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            const avgPoints = movingAverage(coefficientData, 5);
+            ctx.beginPath();
+            ctx.moveTo(0, 200 - (avgPoints[0] * 30));
+            avgPoints.forEach((value, index) => {
+                ctx.lineTo((index + 4) * (400 / coefficientData.length), 200 - (value * 30));
+            });
+            ctx.strokeStyle = '#FF5733';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
